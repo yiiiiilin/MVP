@@ -1,10 +1,14 @@
 import React, {useEffect, useState} from 'react';
+import io from 'socket.io-client';
 import Header from './Header';
 import Footer from './Footer';
 import Section1 from './Section1';
 import Section2 from './Section2';
 import ChatApp from './ChatApp';
 import { GlobalStyle } from './Style/global';
+
+const socket = io.connect('http://localhost:3001');
+console.log('socket.id', socket.id)
 
 export default function App () {
 
@@ -34,7 +38,7 @@ export default function App () {
       <Header handleOnClickOnAbout={handleOnClickOnAbout}/>
       <Section1 photoUrl={photoUrl} />
       <Section2 />
-      <ChatApp />
+      <ChatApp socket={socket}/>
       <Footer />
     </GlobalStyle>
   )

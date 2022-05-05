@@ -1,21 +1,29 @@
 import React from 'react';
 import moment from 'moment';
+import { BiRightArrow } from 'react-icons/bi';
 
-export default function MessageEntry({message}) {
+export default function MessageEntry({message, userName}) {
+  const messageStyle = message.name === userName ?
+  {
+    textAlign: 'right',
+    margin: '10px',
+    borderBottom: '10px',
+  } :
+  {
+    margin: '10px',
+    borderBottom: '10px',
+  };
   return (
     <div
-    style={{
-      margin: '10px',
-      borderBottom: '10px',
-    }}
+    style={messageStyle}
     >
       {message.message} <br />
-      <tag style={{color: 'rgb(14,114,237)',opacity: "0.7"}}>
+      <div style={{color: 'rgb(14,114,237)',opacity: "0.7"}}>
       {`${message.name} `}
-      </tag >
-      <tag  style={{color: 'rgb(14,114,237)', paddingLeft: '60px', opacity: "0.7"}}>
+      </div >
+      <div  style={{color: 'rgb(14,114,237)', paddingLeft: '0px', opacity: "0.7"}}>
         {moment(message.time).fromNow()}
-      </tag>
+      </div>
     </div>
   )
 }

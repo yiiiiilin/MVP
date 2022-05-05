@@ -18,17 +18,13 @@ import {
   AiOutlineFileAdd,
 } from 'react-icons/ai'
 
-export default function ChatApp () {
+export default function ChatApp ({socket}) {
   const [displayIcon, setDisplayIcon] = useState(true);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([])
+  const [messageList, setmessageList] = useState([])
+  const [showLogin, setShowLogin] = useState(true);
+  const [userName, setUserName] = useState('');
 
-  const fakeMessage = [
-    'How are you today?',
-    'Do you have any questions',
-    'What is your name?',
-    'Fine, thank you. And you?'
-  ]
 
   const toggleDisplay = () => {
     setDisplayIcon(!displayIcon)
@@ -36,31 +32,77 @@ export default function ChatApp () {
 
   const handleInput = (e) => {
     if(e.target.value === 'CLEAR') {
-      setMessages([]);
+      setmessageList([]);
     }
     setInput(e.target.value)
   }
 
-  const handleSubmit = () => {
-    setMessages([...messages, {message: input, name: 'From me', time: new Date()}])
+  const handleSubmit = async () => {
+    if (input !== '') {
+      const messageData = {
+        name: userName,
+        message: input,
+        time: new Date(),
+      };
+
+      await socket.emit('send_message', messageData);
+      setmessageList((list) => [...list, messageData]);
+      setInput('')
+    }
+
+    // setmessageList([...messageList, {message: input, time: new Date()}])
   }
 
-  // useEffect(() => {
-  //  let random = fakeMessage[
-  //   Math.floor(
-  //     Math.random()*(fakeMessage.length)
-  //   )
-  // ]}, [])
+  useEffect(() => {
+    socket.on('receive_message', (data) => {
+      console.log(data)
+      setmessageList([...messageList, data]);
+    })
+  }, [messageList, socket]);
 
-  // setInterval((e)=> {
-  //   setMessages(
-  //     [
-  //       ...messages,
-  //       'How are you today?'
-  //     ]
-  //   )
-  // }, 5000);
-
+  const showApp = showLogin?
+  <div>
+    <form>
+      <label>
+        Your Name
+        <input type='text' onChange={(event) => setUserName(event.target.value)}/>
+      </label>
+      <input type='submit' value="Submit"
+      onClick={(e) => {
+        e.preventDefault();
+        setShowLogin(false);
+        }}
+      />
+    </form>
+  </div> :
+  <div>
+     <div
+            style={{
+              textAlign: 'center',
+              bottom: '20px',
+              position: 'absolute',
+            }}
+          >
+            <textarea
+              placeholder='Message...'
+              type="text"
+              onChange={handleInput}
+              style={{
+                height: "100px",
+                width: '280px'
+              }}
+              onKeyPress={(event) => {
+                event.key === 'Enter' && handleSubmit()
+                }
+              }
+            >
+            </textarea>
+            <BiMailSend size="25px" style= {{cursor: 'pointer', paddingRight: '10px'}}onClick={handleSubmit} />
+            <AiOutlinePicture size='25px' style= {{cursor: 'pointer', paddingRight: '10px'}} />
+            <AiOutlineFileAdd size='25px' style= {{cursor: 'pointer'}} />
+          </div>
+  </div>
+  ;
 
 
   return (
@@ -135,32 +177,12 @@ export default function ChatApp () {
           </div>
 
         </div>
-            {messages.map((message) => {
-              return <MessageEntry key={Math.random()}message={message}/>;
+            {messageList.map((message) => {
+              return <MessageEntry key={Math.random()}message={message} userName={userName}/>;
             })}
           </div>
-          <div
-            style={{
-              textAlign: 'center',
-              bottom: '20px',
-              position: 'absolute',
-            }}
-          >
-            <textarea
-              placeholder='Message...'
-              type="text"
-              onChange={handleInput}
-              style={{
-                height: "100px",
-                width: '280px'
-              }}
-            >
-            </textarea>
-            <BiMailSend size="25px" style= {{cursor: 'pointer', paddingRight: '10px'}}onClick={handleSubmit} />
-            <AiOutlinePicture size='25px' style= {{cursor: 'pointer', paddingRight: '10px'}} />
-            <AiOutlineFileAdd size='25px' style= {{cursor: 'pointer'}} />
-          </div>
 
+          {showApp}
         </ModalContent>
          :
         <ChatAppIcon
